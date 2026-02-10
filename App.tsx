@@ -18,6 +18,13 @@ const App: React.FC = () => {
 
   const startCamera = async () => {
     try {
+      // Basic browser check for GitHub Pages / non-secure origins
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setErrorMessage("Camera API not found. This usually happens if you are not using HTTPS.");
+        setStatus(AppStatus.ERROR);
+        return;
+      }
+
       setStatus(AppStatus.CAMERA_REQUEST);
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
@@ -27,9 +34,9 @@ const App: React.FC = () => {
         videoRef.current.srcObject = stream;
         setStatus(AppStatus.SCANNING);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Camera error:", err);
-      setErrorMessage("System access denied. Enable camera sensors.");
+      setErrorMessage(`System access denied: ${err.message || 'Unknown Error'}. Enable camera sensors.`);
       setStatus(AppStatus.ERROR);
     }
   };
@@ -105,7 +112,7 @@ const App: React.FC = () => {
             </div>
             <h1 className="text-3xl font-bold tracking-[0.5em] mb-4 text-white uppercase mono">Vision_AR</h1>
             <p className="text-white/30 max-w-sm text-xs leading-loose mb-12 uppercase tracking-widest mono">
-              Monochrome Intelligence Interface // Object Recognition v.1.3
+              Monochrome Intelligence Interface // Object Recognition v.1.4
             </p>
             <button 
               onClick={startCamera}
@@ -119,6 +126,7 @@ const App: React.FC = () => {
             ref={videoRef}
             autoPlay 
             playsInline 
+            muted
             className="absolute inset-0 w-full h-full object-cover grayscale brightness-75"
           />
         )}

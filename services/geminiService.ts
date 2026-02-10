@@ -5,10 +5,18 @@ import { RecognitionResult } from "../types";
 // Safety check for process.env to prevent crashes on static hosts like GitHub Pages
 const getApiKey = () => {
   try {
-    return process.env.API_KEY || '';
-  } catch {
-    return '';
+    // Check if process is defined before accessing it
+    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+      return process.env.API_KEY;
+    }
+    // Fallback for some specific deployment environments
+    if ((window as any).process?.env?.API_KEY) {
+      return (window as any).process.env.API_KEY;
+    }
+  } catch (e) {
+    console.warn("Process environment check failed, proceeding with empty key.");
   }
+  return '';
 };
 
 const ai = new GoogleGenAI({ apiKey: getApiKey() });
